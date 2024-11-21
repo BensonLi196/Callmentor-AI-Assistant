@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+        }
+        #chatbox {
+            width: 400px;
+            height: 500px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: white;
+            overflow-y: scroll;
+        }
+        .user-message {
+            color: blue;
+            margin: 10px 0;
+        }
+        .bot-response {
+            color: green;
+            margin: 10px 0;
+        }
+        #inputBox {
+            width: 400px;
+            margin-top: 20px;
+        }
+        #sendButton {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #sendButton:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<h1>AI Assistant</h1>
+<div id="chatbox"></div>
+<input type="text" id="inputBox" placeholder="Type a message..." />
+<button id="sendButton" onclick="sendMessage()">Send</button>
+
+<script>
+    let chatHistory = [];
+
+    function appendMessage(message, isUser = true) {
+        const chatbox = document.getElementById('chatbox');
+        const messageElement = document.createElement('div');
+        messageElement.classList.add(isUser ? 'user-message' : 'bot-response');
+        messageElement.textContent = message;
+        chatbox.appendChild(messageElement);
+        chatbox.scrollTop = chatbox.scrollHeight;  // Scroll to bottom
+    }
+
+    async function sendMessage() {
+        const inputBox = document.getElementById('inputBox');
+        const userMessage = inputBox.value;
+        if (!userMessage) return;
+
+        appendMessage(userMessage, true);  // Append user message
+
+        try {
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: userMessage })
+            });
+
+            const data = await response.json();
+            if (data.response) {
+                appendMessage(data.response, false);  // Append bot response
+            } else {
+                appendMessage('Sorry, there was an error processing your request.', false);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            appendMessage('Sorry, there was an error processing your request.', false);
+        }
+
+        inputBox.value = '';  // Clear the input box
+    }
+</script>
+
+</body>
+</html>
